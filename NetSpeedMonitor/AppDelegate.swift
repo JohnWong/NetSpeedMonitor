@@ -9,6 +9,7 @@
 import Cocoa
 import ServiceManagement
 import SystemConfiguration
+import CoreGraphics
 
 extension Notification.Name {
     static let killLauncher = Notification.Name("killLauncher")
@@ -80,6 +81,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func updateSpeed() {
         if let button = statusItem.button {
             button.attributedTitle = NSAttributedString(string: "\n\(String(format: "%7.2lf", uploadSpeed)) \(uploadMetric)/s ↑\n\(String(format: "%7.2lf", downloadSpeed)) \(downloadMetric)/s ↓", attributes: statusBarTextAttributes)
+            var buttonSize = button.attributedTitle.size()
+            buttonSize.width = ceil(buttonSize.width)
+            buttonSize.height = ceil(buttonSize.height)
+            button.frame.size = buttonSize
+            statusItem.length = buttonSize.width
+            button.superview?.superview?.constraints.forEach({ constraint in
+                if (constraint.constant == 16) {
+                    constraint.constant = 0
+                }
+            })
+            print(button)
         }
     }
 
@@ -91,11 +103,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if isRunning {
             DistributedNotificationCenter.default().post(name: .killLauncher, object: Bundle.main.bundleIdentifier!)
         }
-
-        statusItem.length = 85
-        if let button = statusItem.button {
-            button.attributedTitle = NSAttributedString(string: "\n\(String(format: "%7.2lf", 0.0)) KB/s ↑\n\(String(format: "%7.2lf", 0.0)) KB/s ↓", attributes: statusBarTextAttributes)
-        }
+        self.updateSpeed()
 
         startAtLoginButton.state = UserDefaults.standard.bool(forKey: "isStartAtLogin") ? .on : .off
 
