@@ -49,13 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var uploadMetric: String = "KB"
     var downloadMetric: String = "KB"
     var statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
-    var primaryInterface: String = {
-        let storeRef = SCDynamicStoreCreate(nil, "FindCurrentInterfaceIpMac" as CFString, nil, nil)
-        let global = SCDynamicStoreCopyValue(storeRef, "State:/Network/Global/IPv4" as CFString)
-        let primaryInterface = global?.value(forKey: "PrimaryInterface") as? String
-        return primaryInterface ?? ""
-    }()
+    
     var netStat: NetSpeedStat!
     var timer: Timer!
 
@@ -91,7 +85,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     constraint.constant = 0
                 }
             })
-            print(button)
         }
     }
 
@@ -119,27 +112,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self.uploadMetric = "KB"
             } else {
                 if let statResult = self.netStat.getStatsForInterval(1.0) as NSDictionary? {
-                    if let dict = statResult.object(forKey: self.primaryInterface) {
+                    let total = statResult.allValues.reduce((UInt64(0), UInt64(0))) { partialResult, dict in
                         let list = dict as! Dictionary<String, UInt64>
-                        let deltain: Double = Double(list["deltain"] ?? 0) / 1024.0
-                        let deltaout: Double = Double(list["deltaout"] ?? 0) / 1024.0
-                        if (deltain > 1000.0) {
-                            self.downloadSpeed = deltain / 1024.0
-                            self.downloadMetric = "MB"
-                        } else {
-                            self.downloadSpeed = deltain
-                            self.downloadMetric = "KB"
-                        }
-                        if (deltaout > 1000.0) {
-                            self.uploadSpeed = deltaout / 1024.0
-                            self.uploadMetric = "MB"
-                        } else {
-                            self.uploadSpeed = deltaout
-                            self.uploadMetric = "KB"
-                        }
-                        self.updateSpeed()
-//                        print("deltaIn: \(self.downloadSpeed) \(self.downloadMetric)/s, deltaOut: \(self.uploadSpeed) \(self.uploadMetric)/s")
+                        return (partialResult.0 + UInt64(list["deltain"] ?? 0), partialResult.1 + UInt64(list["deltaout"] ?? 0))
                     }
+                    let deltain: Double = Double(total.0) / 1024.0
+                    let deltaout: Double = Double(total.1) / 1024.0
+                    if (deltain > 1000.0) {
+                        self.downloadSpeed = deltain / 1024.0
+                        self.downloadMetric = "MB"
+                    } else {
+                        self.downloadSpeed = deltain
+                        self.downloadMetric = "KB"
+                    }
+                    if (deltaout > 1000.0) {
+                        self.uploadSpeed = deltaout / 1024.0
+                        self.uploadMetric = "MB"
+                    } else {
+                        self.uploadSpeed = deltaout
+                        self.uploadMetric = "KB"
+                    }
+                    self.updateSpeed()
+                    //                        print("deltaIn: \(self.downloadSpeed) \(self.downloadMetric)/s, deltaOut: \(self.uploadSpeed) \(self.uploadMetric)/s")
                 }
             }
         }
