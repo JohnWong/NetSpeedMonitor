@@ -55,14 +55,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var statusBarTextAttributes : [NSAttributedString.Key : Any] {
         let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .right
-        paragraphStyle.maximumLineHeight = 10
+        paragraphStyle.alignment = .right                  // default is .right
+        paragraphStyle.maximumLineHeight = 11               // default is 10
         var map = [NSAttributedString.Key : Any]()
-        if let font = NSFont(name: "SFMono-Regular", size: 9) {
+
+        if let font = NSFont(name: "SFMono-Regular", size: 11) {
+            // Custom
             paragraphStyle.paragraphSpacing = -5
             map[NSAttributedString.Key.font] = font
             if #available(macOS 11, *) {
-                map[NSAttributedString.Key.baselineOffset] = -4
+                // negative value make the bottom goes down
+                map[NSAttributedString.Key.baselineOffset] = -6
             }
         } else {
             paragraphStyle.paragraphSpacing = -7
@@ -74,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func updateSpeed() {
         if let button = statusItem.button {
-            button.attributedTitle = NSAttributedString(string: "\n\(String(format: "%7.2lf", uploadSpeed)) \(uploadMetric)/s ↑\n\(String(format: "%7.2lf", downloadSpeed)) \(downloadMetric)/s ↓", attributes: statusBarTextAttributes)
+            button.attributedTitle = NSAttributedString(string: "\n\(String(format: "%5.1lf", uploadSpeed)) \(uploadMetric)/s ↑\n\(String(format: "%5.1lf", downloadSpeed)) \(downloadMetric)/s ↓", attributes: statusBarTextAttributes)
             var buttonSize = button.attributedTitle.size()
             buttonSize.width = ceil(buttonSize.width)
             buttonSize.height = ceil(buttonSize.height)
