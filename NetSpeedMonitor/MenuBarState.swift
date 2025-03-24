@@ -30,7 +30,7 @@ class MenuBarState: ObservableObject {
     @AppStorage("NetSpeedUpdateInterval") var netSpeedUpdateInterval: NetSpeedUpdateInterval = .Sec1 {
         didSet { updateNetSpeedUpdateIntervalStatus() }
     }
-    @Published var menuText = "↑ \(String(format: "%6.2lf", 0)) \(" B")/s\n↓ \(String(format: "%6.2lf", 0)) \(" B")/s"
+    @Published var menuText = "\(String(format: "%5.1lf ↑", 0)) \(" B")/s\n\(String(format: "%5.1lf ↓", 0)) \(" B")/s"
     
     var currentIcon: NSImage {
         return MenuBarIconGenerator.generateIcon(text: menuText)
@@ -107,7 +107,7 @@ class MenuBarState: ObservableObject {
                                 self.uploadMetric = metric
                             }
                         }
-                        self.menuText = "↑ \(String(format: "%6.2lf", self.uploadSpeed)) \(self.uploadMetric)/s\n↓ \(String(format: "%6.2lf", self.downloadSpeed)) \(self.downloadMetric)/s"
+                        self.menuText = "\(String(format: "%5.1lf", self.uploadSpeed)) \(self.uploadMetric)/s ↑\n\(String(format: "%5.1lf", self.downloadSpeed)) \(self.downloadMetric)/s ↓"
                         
                         logger.info("deltaIn: \(String(format:"%.6f", self.downloadSpeed)) \(self.downloadMetric)/s, deltaOut: \(String(format:"%.6f", self.uploadSpeed)) \(self.uploadMetric)/s")
                     }
